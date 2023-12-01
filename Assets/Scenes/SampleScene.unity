@@ -7966,8 +7966,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 14e2530c7ad1c524b9485376d55261ed, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  database: {fileID: 11400000, guid: 87014132bc48f314ea80531dc9808a46, type: 2}
   inputManager: {fileID: 397588391}
   mouseIndicator: {fileID: 620983004}
+  _gridGraph: {fileID: 1956123229}
+  selectedObject: 0
 --- !u!1001 &1938968656
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -8097,6 +8100,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1956123228}
   - component: {fileID: 1956123227}
+  - component: {fileID: 1956123229}
   m_Layer: 0
   m_Name: Grid
   m_TagString: Untagged
@@ -8132,6 +8136,18 @@ Transform:
   - {fileID: 1961117408}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1956123229
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1956123226}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4c890353a8c9cd54397326555efb001a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1961117407
 GameObject:
   m_ObjectHideFlags: 0

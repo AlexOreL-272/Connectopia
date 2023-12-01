@@ -12,4 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f1af16cc6e4327648b2b4655b90e3be9, type: 3}
   m_Name: New Objects Database SO
   m_EditorClassIdentifier: 
-  objectsData: []
+  objectsData:
+  - <Name>k__BackingField: RoadType1
+    <ID>k__BackingField: 0
+    <Size>k__BackingField: {x: 1, y: 1}
+    <Prefab>k__BackingField: {fileID: 3601453976502816832, guid: 51c549006dea00f4a8adbf03f7b6c8bb, type: 3}
+    <Offset>k__BackingField: {x: 0.5, y: 0.1, z: 0.5}

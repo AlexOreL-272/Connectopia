@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class PlacementSystem : MonoBehaviour
 {
@@ -11,7 +12,7 @@ public class PlacementSystem : MonoBehaviour
 
     [SerializeField] private GameObject mouseIndicator;
 
-    [SerializeField] private Grid _grid;
+    [SerializeField] private GridGraph _gridGraph;
 
     [SerializeField] private int selectedObject = 0;
 
@@ -25,31 +26,20 @@ public class PlacementSystem : MonoBehaviour
     private void Update()
     {
         var mousePosition = inputManager.GetSelectedMapPosition();
-        var gridPosition = _grid.WorldToCell(mousePosition);
-        mouseIndicator.transform.position = _grid.CellToWorld(gridPosition);
+        var gridPosition = _gridGraph.WorldToCell(mousePosition);
+        mouseIndicator.transform.position = _gridGraph.CellToWorld(gridPosition);
     }
     
     public void PlaceObject()
     {
         var mousePosition = inputManager.GetSelectedMapPosition();
-        var gridPosition = _grid.WorldToCell(mousePosition);
-        if (IfBusy(gridPosition))
+        var gridPosition = _gridGraph.WorldToCell(mousePosition);
+        if (_gridGraph.IsCellFree(gridPosition))
         {
             return;
         }
         GameObject newObject = Instantiate(database.objectsData[selectedObject].Prefab);
-        newObject.transform.position = _grid.CellToWorld(gridPosition) + database.objectsData[selectedObject].Offset;
-        _isBusy[gridPosition] = true;
+        newObject.transform.position = _gridGraph.CellToWorld(gridPosition) + database.objectsData[selectedObject].Offset;
+        _gridGraph.PlaceNewObject(gridPosition);
     }
-
-    private bool IfBusy(Vector3Int position)
-    {
-        bool value;
-        if (_isBusy.TryGetValue(position, out value))
-        {
-            return value;
-        }
-
-        return false;
-    }
-}//
+}
