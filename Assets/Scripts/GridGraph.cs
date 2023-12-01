@@ -1,39 +1,46 @@
-using System.Collections;
+using System;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.Serialization;
-using UnityEngine.Tilemaps;
 
 public class GridGraph : MonoBehaviour
 {
-    class State
-    {
-        public bool isOccupied = false;
-        public string color = "";
-        public string type = "";
-    }
-    
-    private Grid grid;
-    
-    private Dictionary<Vector3Int, List<Vector3Int>> _graph = new Dictionary<Vector3Int, List<Vector3Int>>();
+    [SerializeField] private ObjectsDatabaseSO database;
 
-    private Dictionary<Vector3Int, State> _graphStates = new Dictionary<Vector3Int, State>();
-    void Start()
+    [SerializeField] private float lineWidth = 100f;
+
+    private readonly Dictionary<Vector3Int, List<Vector3Int>> _graph = new();
+
+    private readonly Dictionary<Vector3Int, State> _graphStates = new();
+
+    private LineRenderer _lineDrawer;
+
+    private GameObject _newLine;
+
+    private Vector3 _offset;
+
+    private Dictionary<StartEnd, GameObject> _roads = new();
+
+    private Grid grid;
+
+    private Vector3 _cellCenterOffset;
+
+    private void Start()
     {
         grid = GetComponent<Grid>();
+        _offset = new Vector3(grid.cellSize.x / 2f, 0.01f, grid.cellSize.x / 2f);
+        _cellCenterOffset = new Vector3(grid.cellSize.x / 2f, 0, grid.cellSize.x / 2f);
+        Debug.Log(grid.cellSize);
         GetChilds();
     }
+
     private void GetChilds()
     {
         foreach (Transform tilemap in transform)
+        foreach (Transform child in tilemap.GetComponent<Transform>())
         {
-            foreach (Transform child in tilemap.GetComponent<Transform>())
-            {
-                Vector3Int gridPosition = grid.WorldToCell(child.position);
-                _graph[gridPosition] = new List<Vector3Int>();
-                _graphStates[gridPosition] = new State();
-            }
+            var gridPosition = grid.WorldToCell(child.position);
+            _graph[gridPosition] = new List<Vector3Int>();
+            _graphStates[gridPosition] = new State();
         }
     }
 
@@ -46,55 +53,54 @@ public class GridGraph : MonoBehaviour
     {
         return grid.CellToWorld(vector3Int);
     }
-    
+
     private List<Vector3Int> FindShortestPathBFS(Vector3Int startNode)
     {
         // Initialize the visited dictionary
-        Dictionary<Vector3Int, bool> visited = new Dictionary<Vector3Int, bool>();
+        var visited = new Dictionary<Vector3Int, bool>();
 
         // Initialize the queue
-        Queue<Vector3Int> queue = new Queue<Vector3Int>();
+        var queue = new Queue<Vector3Int>();
 
         // Initialize the parent dictionary to track the shortest path
-        Dictionary<Vector3Int, Vector3Int> parent = new Dictionary<Vector3Int, Vector3Int>();
+        var parent = new Dictionary<Vector3Int, Vector3Int>();
 
         // Enqueue the start node
         queue.Enqueue(startNode);
         visited[startNode] = true;
 
-        Vector3Int endNode = startNode;
+        var endNode = startNode;
 
         while (queue.Count > 0)
         {
-            Vector3Int currentNode = queue.Dequeue();
+            var currentNode = queue.Dequeue();
 
-            if (_graphStates[currentNode].type == "factory")
+            if (_graphStates[currentNode].color != Color.gray)
             {
                 endNode = currentNode;
                 break; // Found the end node, exit the loop
             }
 
-            foreach (Vector3Int neighborNode in _graph[currentNode])
-            {
+            foreach (var neighborNode in _graph[currentNode])
                 if (!visited.ContainsKey(neighborNode))
                 {
                     visited[neighborNode] = true;
                     queue.Enqueue(neighborNode);
                     parent[neighborNode] = currentNode;
                 }
-            }
         }
-        
+
         if (startNode == endNode) return new List<Vector3Int>();
 
         // Reconstruct the shortest path
-        List<Vector3Int> path = new List<Vector3Int>();
-        Vector3Int node = endNode;
+        var path = new List<Vector3Int>();
+        var node = endNode;
         while (node != startNode)
         {
             path.Insert(0, node);
             node = parent[node];
         }
+
         path.Insert(0, startNode);
 
         return path;
@@ -109,5 +115,62 @@ public class GridGraph : MonoBehaviour
     {
         _graphStates[vector3Int].isOccupied = true;
     }
-    
+
+    public bool ConnectTwoPoints(Vector3Int point_1, Vector3Int point_2)
+    {
+        if (point_1 == point_2 ||
+            Vector3.Distance(point_1, point_2) >= Math.Sqrt(2) * grid.cellSize.x)
+            return false;
+        if (_graphStates[point_2].isOccupied)
+            return false;
+        
+
+        var points = new Vector3[2];
+        points[0] = CellToWorld(point_1) + _offset;
+        points[1] = CellToWorld(point_2) + _offset;
+
+
+        _newLine = Instantiate(database.objectsData[0].Prefab);
+        _newLine.transform.position = points[0];
+        _lineDrawer = _newLine.GetComponent<LineRenderer>();
+        // _lineDrawer.startColor = Color.red;
+        // _lineDrawer.endColor = Color.red;
+        // _lineDrawer.startWidth = lineWidth;
+        // _lineDrawer.endWidth = lineWidth;
+
+
+        _lineDrawer.positionCount = 2;
+        _lineDrawer.SetPositions(points);
+
+        _graphStates[point_1].isOccupied = true;
+        _graphStates[point_2].isOccupied = true;
+        _graphStates[point_1].type = "road";
+        _graphStates[point_2].type = "road";
+        _graphStates[point_1].color = Color.gray;
+        _graphStates[point_2].color = Color.gray;
+
+        _graph[point_1].Add(point_2);
+        _graph[point_2].Add(point_1);
+
+        return true;
+    }
+
+    public bool IsPointInCell(Vector3 vector3)
+    {
+        return Vector3.Distance(CellToWorld(WorldToCell(vector3)) + _cellCenterOffset, vector3) 
+               < grid.cellSize.x / 3f;
+    }
+
+    private class State
+    {
+        public Color color;
+        public bool isOccupied = false;
+        public string type = "";
+    }
+
+    private class StartEnd
+    {
+        public Vector3Int endPoint;
+        public Vector3Int startPoint;
+    }
 }

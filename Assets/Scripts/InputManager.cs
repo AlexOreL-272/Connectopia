@@ -9,15 +9,15 @@ public class InputManager : MonoBehaviour
 
     private Vector3 lastPosition;
 
-    public event Action OnClicked, OnExit;
-
-    private void Update()
-    {
-        if(Input.GetButton("Fire1"))
-            OnClicked?.Invoke();
-        if(Input.GetKeyDown(KeyCode.Escape))
-            OnExit?.Invoke();
-    }
+    // private void Update()
+    // {
+    //     if (Input.GetButton("Fire1"))
+    //         OnClicked?.Invoke();
+    //     if (Input.GetKeyDown(KeyCode.Escape))
+    //         OnExit?.Invoke();
+    // }
+    //
+    // public event Action OnClicked, OnExit;
 
     // public bool IsPointerOverUI()
     //     => EventSystem.current.IsPointerOverGameObject();
@@ -29,6 +29,7 @@ public class InputManager : MonoBehaviour
         var ray = sceneCamera.ScreenPointToRay(mousePos);
         RaycastHit hit;
         if (Physics.Raycast(ray, out hit, 100, placementLayermask)) lastPosition = hit.point;
+        Debug.Log(hit.transform.gameObject.name);
         return lastPosition;
     }
 }

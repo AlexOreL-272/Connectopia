@@ -16,5 +16,5 @@ MonoBehaviour:
   - <Name>k__BackingField: RoadType1
     <ID>k__BackingField: 0
     <Size>k__BackingField: {x: 1, y: 1}
-    <Prefab>k__BackingField: {fileID: 3601453976502816832, guid: 51c549006dea00f4a8adbf03f7b6c8bb, type: 3}
-    <Offset>k__BackingField: {x: 0.5, y: 0.1, z: 0.5}
+    <Prefab>k__BackingField: {fileID: 5426806655355402599, guid: faf916fc05368fc42aa0c8e4928535c9, type: 3}
+    <Offset>k__BackingField: {x: 0.5, y: 0.1, z: 1}
