@@ -29,7 +29,6 @@ public class InputManager : MonoBehaviour
         var ray = sceneCamera.ScreenPointToRay(mousePos);
         RaycastHit hit;
         if (Physics.Raycast(ray, out hit, 100, placementLayermask)) lastPosition = hit.point;
-        Debug.Log(hit.transform.gameObject.name);
         return lastPosition;
     }
 }
