@@ -8,6 +8,10 @@ public class GridGraph : MonoBehaviour
 
     [SerializeField] private float lineWidth = 100f;
 
+    [SerializeField] private GameObject blueBuilding;
+
+    [SerializeField] private GameObject powerPlant;
+
     private readonly Dictionary<Vector3Int, List<Vector3Int>> _graph = new();
 
     private readonly Dictionary<Vector3Int, State> _graphStates = new();
@@ -31,6 +35,9 @@ public class GridGraph : MonoBehaviour
         _cellCenterOffset = new Vector3(grid.cellSize.x / 2f, 0, grid.cellSize.x / 2f);
         Debug.Log(grid.cellSize);
         GetChilds();
+
+        PlacePowerPlant();
+        PlaceBuilding();
     }
 
     private void GetChilds()
@@ -121,8 +128,8 @@ public class GridGraph : MonoBehaviour
         if (point_1 == point_2 ||
             Vector3.Distance(point_1, point_2) >= Math.Sqrt(2) * grid.cellSize.x)
             return false;
-        if (_graphStates[point_2].isOccupied)
-            return false;
+        //if (_graphStates[point_2].isOccupied)
+        //    return false;
         
 
         var points = new Vector3[2];
@@ -159,6 +166,60 @@ public class GridGraph : MonoBehaviour
     {
         return Vector3.Distance(CellToWorld(WorldToCell(vector3)) + _cellCenterOffset, vector3) 
                < grid.cellSize.x / 3f;
+    }
+
+    public void PlaceBuilding(int amount = 8)
+    {
+        Vector3Int[] keys = new Vector3Int[_graphStates.Count];
+        _graphStates.Keys.CopyTo(keys, 0);
+
+        for (int i = 0; i < amount;)
+        {
+            var randPos = keys[UnityEngine.Random.Range(0, keys.Length)];
+
+            if (_graphStates[randPos].type == "building")
+            {
+                continue;
+            }
+
+            State newState = new State();
+            newState.isOccupied = true;
+            newState.type = "building";
+            newState.color = Color.blue;
+
+            _graphStates[randPos] = newState;
+
+            (randPos.y, randPos.z) = (randPos.z, randPos.y);
+            var newBuilding = Instantiate(blueBuilding, randPos, Quaternion.identity);
+            newBuilding.transform.position += new Vector3(grid.cellSize.x, 4.0f, _offset.z);
+
+            MeshRenderer renderer = newBuilding.GetComponentInChildren<MeshRenderer>();
+            renderer.enabled = true;
+
+            ++i;
+        }
+    }
+
+    public void PlacePowerPlant()
+    {
+        Vector3Int[] keys = new Vector3Int[_graphStates.Count];
+        _graphStates.Keys.CopyTo(keys, 0);
+
+        var randPos = keys[UnityEngine.Random.Range(0, keys.Length)];
+
+        State newState = new State();
+        newState.isOccupied = true;
+        newState.type = "power";
+        newState.color = Color.blue;
+
+        _graphStates[randPos] = newState;
+
+        (randPos.y, randPos.z) = (randPos.z, randPos.y);
+        var newBuilding = Instantiate(powerPlant, randPos, Quaternion.identity);
+        newBuilding.transform.position += new Vector3(grid.cellSize.x, 0.0f, _offset.z);
+
+        MeshRenderer renderer = newBuilding.GetComponentInChildren<MeshRenderer>();
+        renderer.enabled = true;
     }
 
     private class State
