@@ -37,7 +37,7 @@ public class GridGraph : MonoBehaviour
         grid = GetComponent<Grid>();
         _offset = new Vector3(grid.cellSize.x / 2f, 0.01f, grid.cellSize.x / 2f);
         _cellCenterOffset = new Vector3(grid.cellSize.x / 2f, 0, grid.cellSize.x / 2f);
-        Debug.Log(grid.cellSize);
+        // Debug.Log(grid.cellSize);
         GetChilds();
 
         PlacePowerPlant();
@@ -259,26 +259,32 @@ public class GridGraph : MonoBehaviour
     {
         var currLine = new Tuple<Vector3Int, Vector3Int>(startPos, endPos);
         var currLineBack = new Tuple<Vector3Int, Vector3Int>(endPos, startPos);
+        _graphStates[startPos].color = newColor;
+        _graphStates[endPos].color = newColor;
 
         var resultCurrLine = new Tuple<Vector3Int, Vector3Int>(new Vector3Int(), new Vector3Int());
 
         if (_roads.ContainsKey(currLine))
         {
-            Destroy(_roads[currLine], 0);
+            _roads[currLine].GetComponent<LineRenderer>().startColor = newColor;
+            _roads[currLine].GetComponent<LineRenderer>().endColor = newColor;
+            // Destroy(_roads[currLine], 0);
             resultCurrLine = currLine;
         }
         if (_roads.ContainsKey(currLineBack))
         {
-            Destroy(_roads[currLineBack], 0);
+            _roads[currLineBack].GetComponent<LineRenderer>().startColor = newColor;
+            _roads[currLineBack].GetComponent<LineRenderer>().endColor = newColor;
+            // Destroy(_roads[currLineBack], 0);
             resultCurrLine = currLineBack;
         }
 
-        var newRoad = Instantiate(database.objectsData[0].Prefab);
-        newRoad.transform.position = startPos + new Vector3(0f, 0.05f, 0f);
-        var lineDrawer = newRoad.GetComponent<LineRenderer>();
+        // var newRoad = Instantiate(database.objectsData[0].Prefab);
+        // newRoad.transform.position = startPos + new Vector3(0f, 0.05f, 0f);
+        // var lineDrawer = newRoad.GetComponent<LineRenderer>();
 
         var currPos = resultCurrLine.Item1;
-        (currPos.y, currPos.z) = (currPos.z, currPos.y);
+        // (currPos.y, currPos.z) = (currPos.z, currPos.y);
 
         if (_graphStates[currPos].color == Color.gray)
         {
@@ -286,18 +292,18 @@ public class GridGraph : MonoBehaviour
             (currPos.y, currPos.z) = (currPos.z, currPos.y);
         }
 
-        lineDrawer.startColor = _graphStates[currPos].color;
-        lineDrawer.endColor = _graphStates[currPos].color;
-        lineDrawer.startWidth = lineWidth;
-        lineDrawer.endWidth = lineWidth;
-
-        lineDrawer.positionCount = 2;
-        Vector3[] points = new Vector3[2];
-        points[0] = CellToWorld(startPos) + _offset;
-        points[1] = CellToWorld(endPos) + _offset;
-
-        lineDrawer.SetPositions(points);
-        _roads.Add(resultCurrLine, newRoad);
+        // lineDrawer.startColor = _graphStates[currPos].color;
+        // lineDrawer.endColor = _graphStates[currPos].color;
+        // lineDrawer.startWidth = lineWidth;
+        // lineDrawer.endWidth = lineWidth;
+        //
+        // lineDrawer.positionCount = 2;
+        // Vector3[] points = new Vector3[2];
+        // points[0] = CellToWorld(startPos) + _offset;
+        // points[1] = CellToWorld(endPos) + _offset;
+        //
+        // lineDrawer.SetPositions(points);
+        // _roads.Add(resultCurrLine, newRoad);
     }
 
     private bool ConnectsToPowerPlant(Vector3Int startPos)
@@ -403,13 +409,14 @@ public class GridGraph : MonoBehaviour
             while (visitQueue.Count != 0)
             {
                 var currPos = visitQueue.Dequeue();
-                visited.Add(currPos);
 
                 if (!_graph.ContainsKey(currPos))
                 {
                     (currPos.y, currPos.z) = (currPos.z, currPos.y);
                 }
-
+                
+                visited.Add(currPos);
+                
                 foreach (Vector3Int neighbourPos in _graph[currPos])
                 {
                     if (visited.Contains(neighbourPos))
