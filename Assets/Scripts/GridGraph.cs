@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class GridGraph : MonoBehaviour
@@ -443,6 +444,43 @@ public class GridGraph : MonoBehaviour
             //Debug.Log("Spreading electricity!");
             //SpreadEnergy(pos);
         }
+    }
+
+    public void DeletePoint(Vector3Int pos)
+    {
+        if (!_graph.ContainsKey(pos)) return;
+        
+        foreach (Vector3Int neighbourPos in _graph[pos])
+        {
+            var currLine = new Tuple<Vector3Int, Vector3Int>(pos, neighbourPos);
+            var currLineBack = new Tuple<Vector3Int, Vector3Int>(neighbourPos, pos);
+            
+            if (_roads.ContainsKey(currLine))
+            {
+                Destroy(_roads[currLine], 0);
+                _roads.Remove(currLine);
+            }
+
+            if (_roads.ContainsKey(currLineBack))
+            {
+                Destroy(_roads[currLineBack], 0);
+                _roads.Remove(currLineBack);
+            }
+            
+            _graph[neighbourPos].Remove(pos);
+            if (_graphStates[pos].type == "road")
+            {
+                _graphStates[pos].color = Color.gray;
+                _graphStates[pos].type = "";
+            }
+
+            if (_graphStates[neighbourPos].type == "road")
+            {
+                _graphStates[neighbourPos].color = Color.gray;
+                _graphStates[neighbourPos].type = "";
+            }
+        }
+        SpreadEnergy();
     }
 
     private class State

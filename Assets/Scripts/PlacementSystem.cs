@@ -36,6 +36,8 @@ public class PlacementSystem : MonoBehaviour
 
         if (Input.GetButton("Fire1"))
             PlaceRoad();
+        else if (Input.GetButton("Fire2")) 
+            RemovePoint();
         else
             _isButtonHold = false;
     }
@@ -62,5 +64,13 @@ public class PlacementSystem : MonoBehaviour
         }
 
         if (_gridGraph.IsPointInCell(mousePosition) && _gridGraph.ConnectTwoPoints(_previousCellPosition, gridPosition)) _previousCellPosition = gridPosition;
+    }
+
+    public void RemovePoint()
+    {
+        var mousePosition = inputManager.GetSelectedMapPosition();
+        var gridPosition = _gridGraph.WorldToCell(mousePosition);
+        
+        _gridGraph.DeletePoint(gridPosition);
     }
 }
