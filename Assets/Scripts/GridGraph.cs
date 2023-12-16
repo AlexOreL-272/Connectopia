@@ -133,6 +133,7 @@ public class GridGraph : MonoBehaviour
         _newLine = Instantiate(database.objectsData[0].Prefab);
         _newLine.transform.position = points[0];
         _lineDrawer = _newLine.GetComponent<LineRenderer>();
+        _roads[new StartEnd(point_1, point_2)] = _newLine;
         // _lineDrawer.startColor = Color.red;
         // _lineDrawer.endColor = Color.red;
         // _lineDrawer.startWidth = lineWidth;
@@ -158,7 +159,7 @@ public class GridGraph : MonoBehaviour
     public bool IsPointInCell(Vector3 vector3)
     {
         return Vector3.Distance(CellToWorld(WorldToCell(vector3)) + _cellCenterOffset, vector3) 
-               < grid.cellSize.x / 3f;
+               < grid.cellSize.x / 2.5f;
     }
 
     private class State
@@ -170,6 +171,19 @@ public class GridGraph : MonoBehaviour
 
     private class StartEnd
     {
+        public StartEnd(Vector3Int p1, Vector3Int p2)
+        {
+            if (p1.x < p2.x ||
+                (p1.x == p2.x && p1.y < p2.y) ||
+                (p1.x == p2.x && p1.y == p2.y && p1.z < p2.z))
+            {
+                startPoint = p1;
+                endPoint = p2;
+                return;
+            }
+            startPoint = p2;
+            endPoint = p1;
+        }
         public Vector3Int endPoint;
         public Vector3Int startPoint;
     }
