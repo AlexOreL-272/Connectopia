@@ -224,7 +224,7 @@ public class GridGraph : MonoBehaviour
     public bool IsPointInCell(Vector3 vector3)
     {
         return Vector3.Distance(CellToWorld(WorldToCell(vector3)) + _cellCenterOffset, vector3)
-               < grid.cellSize.x / 3f;
+               < grid.cellSize.x / 2.5f;
     }
 
     public void PlaceBuilding(int amount = 8)
