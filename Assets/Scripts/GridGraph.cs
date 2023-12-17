@@ -470,9 +470,9 @@ public class GridGraph : MonoBehaviour
                 {
                     (currPos.y, currPos.z) = (currPos.z, currPos.y);
                 }
-                
+
                 visited.Add(currPos);
-                
+
                 foreach (Vector3Int neighbourPos in _graph[currPos])
                 {
                     if (visited.Contains(neighbourPos))
@@ -560,67 +560,6 @@ public class GridGraph : MonoBehaviour
             item.Value.GetComponent<LineRenderer>().startColor = Color.gray;
             item.Value.GetComponent<LineRenderer>().endColor = Color.gray;
 
-            if (_graphStates[startPos].type != "power")
-            {
-                _graphStates[startPos].color = Color.gray;
-                _graphStates[startPos].type = "";
-            }
-
-            if (_graphStates[endPos].type != "power")
-            {
-                _graphStates[endPos].color = Color.gray;
-                _graphStates[endPos].type = "";
-            }
-        }
-    }
-
-    public void DeletePoint(Vector3Int pos)
-    {
-        if (!_graph.ContainsKey(pos)) return;
-        
-        foreach (Vector3Int neighbourPos in _graph[pos])
-        {
-            var currLine = new Tuple<Vector3Int, Vector3Int>(pos, neighbourPos);
-            var currLineBack = new Tuple<Vector3Int, Vector3Int>(neighbourPos, pos);
-            
-            if (_roads.ContainsKey(currLine))
-            {
-                Destroy(_roads[currLine], 0);
-                _roads.Remove(currLine);
-            }
-
-            if (_roads.ContainsKey(currLineBack))
-            {
-                Destroy(_roads[currLineBack], 0);
-                _roads.Remove(currLineBack);
-            }
-            
-            _graph[neighbourPos].Remove(pos);
-            if (_graphStates[pos].type != "power")
-            {
-                _graphStates[pos].color = Color.gray;
-                _graphStates[pos].type = "";
-            }
-
-            if (_graphStates[neighbourPos].type != "power")
-            {
-                _graphStates[neighbourPos].color = Color.gray;
-                _graphStates[neighbourPos].type = "";
-            }
-        }
-        SetDefaultColor();
-        SpreadEnergy();
-    }
-
-    private void SetDefaultColor()
-    {
-        foreach (var item in _roads)
-        {
-            Vector3Int startPos = item.Key.Item1;
-            Vector3Int endPos = item.Key.Item2;
-            item.Value.GetComponent<LineRenderer>().startColor = Color.gray;
-            item.Value.GetComponent<LineRenderer>().endColor = Color.gray;
-            
             if (_graphStates[startPos].type != "power")
             {
                 _graphStates[startPos].color = Color.gray;
