@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class GridGraph : MonoBehaviour
@@ -8,11 +9,13 @@ public class GridGraph : MonoBehaviour
 
     [SerializeField] private float lineWidth = 100f;
 
-    [SerializeField] private GameObject blueBuilding;
+    [SerializeField] private int _colorsAmt = 4;
 
-    [SerializeField] private GameObject powerPlant;
+    [SerializeField] private GameObject[] _buildings = new GameObject[4];
 
-    private int _colorsAmt = 1;
+    [SerializeField] private GameObject _powerPlant;
+
+    [SerializeField] private Material[] _powerPlantMaterials = new Material[4];
 
     private Vector3Int[] powerPlantsPos = new Vector3Int[4];
 
@@ -37,11 +40,36 @@ public class GridGraph : MonoBehaviour
         grid = GetComponent<Grid>();
         _offset = new Vector3(grid.cellSize.x / 2f, 0.01f, grid.cellSize.x / 2f);
         _cellCenterOffset = new Vector3(grid.cellSize.x / 2f, 0, grid.cellSize.x / 2f);
-        Debug.Log(grid.cellSize);
+        // Debug.Log(grid.cellSize);
         GetChilds();
 
         PlacePowerPlant();
         PlaceBuilding();
+    }
+
+    private void Update()
+    {
+        if (CheckTurnEnd())
+        {
+            Debug.Log("Turn ended!!");
+
+            PlaceBuilding(3);
+        }
+    }
+
+    private bool CheckTurnEnd()
+    {
+        foreach (var pos in _graphStates.Keys)
+        {
+            var currState = _graphStates[pos];
+
+            if (currState.type == "building" && currState.color != currState.neededColor)
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private void GetChilds()
@@ -139,8 +167,15 @@ public class GridGraph : MonoBehaviour
         {
             return true;
         }
-        //if (_graphStates[point_2].isOccupied)
-        //    return false;
+
+        var lhs_color = _graphStates[point_1].color;
+        var rhs_color = _graphStates[point_2].color;
+
+        if (lhs_color != rhs_color && 
+            (lhs_color != Color.gray && rhs_color != Color.gray))
+        {
+            return false;
+        }
 
 
         var points = new Vector3[2];
@@ -152,8 +187,9 @@ public class GridGraph : MonoBehaviour
 
         _lineDrawer = _newLine.GetComponent<LineRenderer>();
 
-        _lineDrawer.startColor = _graphStates[point_1].color;
-        _lineDrawer.endColor = _graphStates[point_1].color;
+        _lineDrawer.startColor = Color.gray;
+        _lineDrawer.endColor = Color.gray;
+
         _lineDrawer.startWidth = lineWidth;
         _lineDrawer.endWidth = lineWidth;
 
@@ -193,6 +229,11 @@ public class GridGraph : MonoBehaviour
 
     public void PlaceBuilding(int amount = 8)
     {
+        Color[] colorMap = new Color[4]
+        {
+            Color.red, Color.green, Color.blue, Color.yellow
+        };
+
         Vector3Int[] keys = new Vector3Int[_graphStates.Count];
         _graphStates.Keys.CopyTo(keys, 0);
 
@@ -210,11 +251,19 @@ public class GridGraph : MonoBehaviour
             newState.type = "building";
             newState.color = Color.gray;
 
+            int randColor = UnityEngine.Random.Range(0, _colorsAmt);
+
+            newState.neededColor = colorMap[randColor];
+
             _graphStates[randPos] = newState;
 
             (randPos.y, randPos.z) = (randPos.z, randPos.y);
-            var newBuilding = Instantiate(blueBuilding, randPos, Quaternion.identity);
-            newBuilding.transform.position += new Vector3(grid.cellSize.x, 4.0f, _offset.z);
+            var newBuilding = Instantiate(
+                _buildings[randColor],
+                randPos,
+                Quaternion.identity
+            );
+            newBuilding.transform.position += new Vector3(_offset.x, 0f, _offset.z);
 
             MeshRenderer renderer = newBuilding.GetComponentInChildren<MeshRenderer>();
             renderer.enabled = true;
@@ -237,18 +286,25 @@ public class GridGraph : MonoBehaviour
         {
             var randPos = keys[UnityEngine.Random.Range(0, keys.Length)];
 
+            if (_graphStates[randPos].isOccupied)
+            {
+                continue;
+            }
+
             State newState = new State();
             newState.isOccupied = true;
             newState.type = "power";
             newState.color = colors[i];
+            newState.neededColor = colors[i];
 
             _graphStates[randPos] = newState;
 
             (randPos.y, randPos.z) = (randPos.z, randPos.y);
-            var newBuilding = Instantiate(powerPlant, randPos, Quaternion.identity);
-            newBuilding.transform.position += new Vector3(grid.cellSize.x, 0.0f, _offset.z);
+            var newBuilding = Instantiate(_powerPlant, randPos, Quaternion.identity);
+            newBuilding.transform.position += new Vector3(_offset.x, 0.0f, _offset.z);
 
             MeshRenderer renderer = newBuilding.GetComponentInChildren<MeshRenderer>();
+            renderer.material = _powerPlantMaterials[i];
             renderer.enabled = true;
 
             powerPlantsPos[i] = randPos;
@@ -259,26 +315,32 @@ public class GridGraph : MonoBehaviour
     {
         var currLine = new Tuple<Vector3Int, Vector3Int>(startPos, endPos);
         var currLineBack = new Tuple<Vector3Int, Vector3Int>(endPos, startPos);
+        _graphStates[startPos].color = newColor;
+        _graphStates[endPos].color = newColor;
 
         var resultCurrLine = new Tuple<Vector3Int, Vector3Int>(new Vector3Int(), new Vector3Int());
 
         if (_roads.ContainsKey(currLine))
         {
-            Destroy(_roads[currLine], 0);
+            _roads[currLine].GetComponent<LineRenderer>().startColor = newColor;
+            _roads[currLine].GetComponent<LineRenderer>().endColor = newColor;
+            // Destroy(_roads[currLine], 0);
             resultCurrLine = currLine;
         }
         if (_roads.ContainsKey(currLineBack))
         {
-            Destroy(_roads[currLineBack], 0);
+            _roads[currLineBack].GetComponent<LineRenderer>().startColor = newColor;
+            _roads[currLineBack].GetComponent<LineRenderer>().endColor = newColor;
+            // Destroy(_roads[currLineBack], 0);
             resultCurrLine = currLineBack;
         }
 
-        var newRoad = Instantiate(database.objectsData[0].Prefab);
-        newRoad.transform.position = startPos + new Vector3(0f, 0.05f, 0f);
-        var lineDrawer = newRoad.GetComponent<LineRenderer>();
+        // var newRoad = Instantiate(database.objectsData[0].Prefab);
+        // newRoad.transform.position = startPos + new Vector3(0f, 0.05f, 0f);
+        // var lineDrawer = newRoad.GetComponent<LineRenderer>();
 
         var currPos = resultCurrLine.Item1;
-        (currPos.y, currPos.z) = (currPos.z, currPos.y);
+        // (currPos.y, currPos.z) = (currPos.z, currPos.y);
 
         if (_graphStates[currPos].color == Color.gray)
         {
@@ -286,18 +348,18 @@ public class GridGraph : MonoBehaviour
             (currPos.y, currPos.z) = (currPos.z, currPos.y);
         }
 
-        lineDrawer.startColor = _graphStates[currPos].color;
-        lineDrawer.endColor = _graphStates[currPos].color;
-        lineDrawer.startWidth = lineWidth;
-        lineDrawer.endWidth = lineWidth;
-
-        lineDrawer.positionCount = 2;
-        Vector3[] points = new Vector3[2];
-        points[0] = CellToWorld(startPos) + _offset;
-        points[1] = CellToWorld(endPos) + _offset;
-
-        lineDrawer.SetPositions(points);
-        _roads.Add(resultCurrLine, newRoad);
+        // lineDrawer.startColor = _graphStates[currPos].color;
+        // lineDrawer.endColor = _graphStates[currPos].color;
+        // lineDrawer.startWidth = lineWidth;
+        // lineDrawer.endWidth = lineWidth;
+        //
+        // lineDrawer.positionCount = 2;
+        // Vector3[] points = new Vector3[2];
+        // points[0] = CellToWorld(startPos) + _offset;
+        // points[1] = CellToWorld(endPos) + _offset;
+        //
+        // lineDrawer.SetPositions(points);
+        // _roads.Add(resultCurrLine, newRoad);
     }
 
     private bool ConnectsToPowerPlant(Vector3Int startPos)
@@ -403,12 +465,13 @@ public class GridGraph : MonoBehaviour
             while (visitQueue.Count != 0)
             {
                 var currPos = visitQueue.Dequeue();
-                visited.Add(currPos);
 
                 if (!_graph.ContainsKey(currPos))
                 {
                     (currPos.y, currPos.z) = (currPos.z, currPos.y);
                 }
+
+                visited.Add(currPos);
 
                 foreach (Vector3Int neighbourPos in _graph[currPos])
                 {
@@ -438,9 +501,83 @@ public class GridGraph : MonoBehaviour
         }
     }
 
+    public void DeletePoint(Vector3Int pos)
+    {
+        if (!_graph.ContainsKey(pos)) return;
+
+        foreach (Vector3Int neighbourPos in _graph[pos])
+        {
+            var currLine = new Tuple<Vector3Int, Vector3Int>(pos, neighbourPos);
+            var currLineBack = new Tuple<Vector3Int, Vector3Int>(neighbourPos, pos);
+
+            if (_roads.ContainsKey(currLine))
+            {
+                Destroy(_roads[currLine], 0);
+                _roads.Remove(currLine);
+            }
+
+            if (_roads.ContainsKey(currLineBack))
+            {
+                Destroy(_roads[currLineBack], 0);
+                _roads.Remove(currLineBack);
+            }
+
+            _graph[neighbourPos].Remove(pos);
+
+            if (_graphStates[pos].type != "power")
+            {
+                _graphStates[pos].color = Color.gray;
+
+                if (_graphStates[pos].type != "building")
+                {
+                    _graphStates[pos].type = "";
+                }
+            }
+
+            if (_graphStates[neighbourPos].type != "power")
+            {
+                _graphStates[neighbourPos].color = Color.gray;
+
+                if (_graphStates[neighbourPos].type != "building")
+                {
+                    _graphStates[neighbourPos].type = "";
+                }
+            }
+        }
+
+        _graph[pos].Clear();
+
+        SetDefaultColor();
+        SpreadEnergy();
+    }
+
+    private void SetDefaultColor()
+    {
+        foreach (var item in _roads)
+        {
+            Vector3Int startPos = item.Key.Item1;
+            Vector3Int endPos = item.Key.Item2;
+            item.Value.GetComponent<LineRenderer>().startColor = Color.gray;
+            item.Value.GetComponent<LineRenderer>().endColor = Color.gray;
+
+            if (_graphStates[startPos].type != "power")
+            {
+                _graphStates[startPos].color = Color.gray;
+                _graphStates[startPos].type = "";
+            }
+
+            if (_graphStates[endPos].type != "power")
+            {
+                _graphStates[endPos].color = Color.gray;
+                _graphStates[endPos].type = "";
+            }
+        }
+    }
+
     private class State
     {
-        public Color color = Color.white;
+        public Color color = Color.gray;
+        public Color neededColor = Color.white;
         public bool isOccupied = false;
         public string type = "";
     }
@@ -458,7 +595,7 @@ public class GridGraph : MonoBehaviour
 
         public static bool operator ==(StartEnd lhs, StartEnd rhs)
         {
-            return (lhs.startPoint == rhs.startPoint && lhs.endPoint == rhs.endPoint) || 
+            return (lhs.startPoint == rhs.startPoint && lhs.endPoint == rhs.endPoint) ||
                 (lhs.startPoint == rhs.endPoint && lhs.endPoint == rhs.startPoint);
         }
 
