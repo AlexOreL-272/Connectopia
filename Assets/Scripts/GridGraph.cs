@@ -152,9 +152,10 @@ public class GridGraph : MonoBehaviour
         _newLine.transform.position = points[0] + new Vector3(-grid.cellSize.x, 0.05f, 0f);
 
         _lineDrawer = _newLine.GetComponent<LineRenderer>();
-
-        _lineDrawer.startColor = _graphStates[point_1].color;
-        _lineDrawer.endColor = _graphStates[point_1].color;
+        
+        _lineDrawer.startColor = Color.gray;
+        _lineDrawer.endColor = Color.gray;
+        
         _lineDrawer.startWidth = lineWidth;
         _lineDrawer.endWidth = lineWidth;
 
@@ -468,19 +469,43 @@ public class GridGraph : MonoBehaviour
             }
             
             _graph[neighbourPos].Remove(pos);
-            if (_graphStates[pos].type == "road")
+            if (_graphStates[pos].type != "power")
             {
                 _graphStates[pos].color = Color.gray;
                 _graphStates[pos].type = "";
             }
 
-            if (_graphStates[neighbourPos].type == "road")
+            if (_graphStates[neighbourPos].type != "power")
             {
                 _graphStates[neighbourPos].color = Color.gray;
                 _graphStates[neighbourPos].type = "";
             }
         }
+        SetDefaultColor();
         SpreadEnergy();
+    }
+
+    private void SetDefaultColor()
+    {
+        foreach (var item in _roads)
+        {
+            Vector3Int startPos = item.Key.Item1;
+            Vector3Int endPos = item.Key.Item2;
+            item.Value.GetComponent<LineRenderer>().startColor = Color.gray;
+            item.Value.GetComponent<LineRenderer>().endColor = Color.gray;
+            
+            if (_graphStates[startPos].type != "power")
+            {
+                _graphStates[startPos].color = Color.gray;
+                _graphStates[startPos].type = "";
+            }
+
+            if (_graphStates[endPos].type != "power")
+            {
+                _graphStates[endPos].color = Color.gray;
+                _graphStates[endPos].type = "";
+            }
+        }
     }
 
     private class State
