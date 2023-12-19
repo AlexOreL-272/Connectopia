@@ -25,8 +25,8 @@ public class ObjectRotate : MonoBehaviour {
             float horizontal = rotationSpeed * Input.GetAxis("Horizontal");
             float vertical = rotationSpeed * Input.GetAxis("Vertical");
 
-            transform.RotateAround(target.position, Vector3.up, horizontal);
-            transform.RotateAround(target.position, transform.right, -vertical);
+            transform.RotateAround(target.position, Vector3.up, -horizontal);
+            transform.RotateAround(target.position, transform.right, vertical);
 
             if (transform.position.y < minY) {
                 transform.position = new Vector3(transform.position.x, minY, transform.position.z);
