@@ -8,7 +8,7 @@ public class ObjectRotate : MonoBehaviour {
     public float minY = 0.0f;
     public float zoomSpeed = 2.0f;
     public float minZoom = 2.0f;
-    public float maxZoom = 10.0f;
+    public float maxZoom = 20.0f;
 
     private Camera cam;
 
