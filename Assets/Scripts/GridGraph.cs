@@ -2,6 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
+using UnityEngine.SceneManagement;
 
 public class GridGraph : MonoBehaviour
 {
@@ -18,6 +21,20 @@ public class GridGraph : MonoBehaviour
     [SerializeField] private Material[] _powerPlantMaterials = new Material[4];
 
     private Vector3Int[] powerPlantsPos = new Vector3Int[4];
+
+    [SerializeField] private int _buildingsAddedPerRound = 4;
+
+    [SerializeField] private int _roadsAddedPerRound = 50;
+
+    [SerializeField] private int _roundsAmt = 5;
+
+    [SerializeField] private int _availableRoadsAmt = 50;
+
+    public Slider _progressBar;
+
+    private int _roundIdx;
+
+    public TMP_Text _roadsAmtText;
 
     private readonly Dictionary<Vector3Int, List<Vector3Int>> _graph = new();
 
@@ -44,16 +61,29 @@ public class GridGraph : MonoBehaviour
         GetChilds();
 
         PlacePowerPlant();
-        PlaceBuilding();
+        PlaceBuilding(2 * _buildingsAddedPerRound);
+
+        _roundIdx = 1;
+        _progressBar.value = 0f;
     }
 
     private void Update()
     {
+        _roadsAmtText.SetText("" + _availableRoadsAmt);
+
         if (CheckTurnEnd())
         {
-            Debug.Log("Turn ended!!");
+            if (_roundIdx == _roundsAmt)
+            {
+                SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
+            }
 
-            PlaceBuilding(3);
+            ++_roundIdx;
+            _progressBar.value = (float)(_roundIdx - 1) / _roundsAmt;
+
+            PlaceBuilding(_buildingsAddedPerRound);
+
+            _availableRoadsAmt += _roadsAddedPerRound;
         }
     }
 
@@ -157,6 +187,11 @@ public class GridGraph : MonoBehaviour
 
     public bool ConnectTwoPoints(Vector3Int point_1, Vector3Int point_2)
     {
+        if (_availableRoadsAmt == 0)
+        {
+            return false;
+        }
+
         if (point_1 == point_2 ||
             Vector3.Distance(point_1, point_2) >= Math.Sqrt(2) * grid.cellSize.x)
         {
@@ -215,6 +250,8 @@ public class GridGraph : MonoBehaviour
 
         _graph[point_1].Add(point_2);
         _graph[point_2].Add(point_1);
+
+        --_availableRoadsAmt;
 
         SpreadEnergy();
 
@@ -543,6 +580,8 @@ public class GridGraph : MonoBehaviour
                     _graphStates[neighbourPos].type = "";
                 }
             }
+
+            ++_availableRoadsAmt;
         }
 
         _graph[pos].Clear();
@@ -563,13 +602,21 @@ public class GridGraph : MonoBehaviour
             if (_graphStates[startPos].type != "power")
             {
                 _graphStates[startPos].color = Color.gray;
-                _graphStates[startPos].type = "";
+
+                if (_graphStates[startPos].type != "building")
+                {
+                    _graphStates[startPos].type = "";
+                }
             }
 
             if (_graphStates[endPos].type != "power")
             {
                 _graphStates[endPos].color = Color.gray;
-                _graphStates[endPos].type = "";
+
+                if (_graphStates[endPos].type != "building")
+                {
+                    _graphStates[endPos].type = "";
+                }
             }
         }
     }
