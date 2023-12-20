@@ -26,19 +26,38 @@ public class ObjectRotate : MonoBehaviour {
         float horizontalInput = Input.GetAxis("Horizontal");
         float verticalInput = Input.GetAxis("Vertical");
         float zoomInput = Input.GetAxis("Mouse ScrollWheel");
+        
 
-        if (Mathf.Abs(horizontalInput) > 0 || Mathf.Abs(verticalInput) > 0) {
-            float horizontal = rotationSpeed * Input.GetAxis("Horizontal");
+        if (Mathf.Abs(verticalInput) > 0 && transform.localRotation.eulerAngles.x < 85.0f)
+        {
             float vertical = rotationSpeed * Input.GetAxis("Vertical");
-            
-            transform.RotateAround(target.position, Vector3.up, -horizontal);
             transform.RotateAround(target.position, transform.right, vertical);
-
+            
             if (transform.position.y < minY)
             {
                 transform.position = new Vector3(transform.position.x, minY, transform.position.z);
             }
             
+            transform.LookAt(target);
+        }
+        
+        if (verticalInput < 0 && transform.localRotation.eulerAngles.x > 85.0f)
+        {
+            float vertical = rotationSpeed * Input.GetAxis("Vertical");
+            transform.RotateAround(target.position, transform.right, vertical);
+            
+            if (transform.position.y < minY)
+            {
+                transform.position = new Vector3(transform.position.x, minY, transform.position.z);
+            }
+            
+            transform.LookAt(target);
+        }
+
+        if (Mathf.Abs(horizontalInput) > 0) {
+            float horizontal = rotationSpeed * Input.GetAxis("Horizontal");
+            
+            transform.RotateAround(target.position, Vector3.up, -horizontal);
 
             transform.LookAt(target);
         }
