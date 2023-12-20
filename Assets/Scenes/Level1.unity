@@ -6247,7 +6247,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Level 1
+  m_text: First steps
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -11811,9 +11811,9 @@ MonoBehaviour:
   - {fileID: 2100000, guid: eb62c5a499b915b468962dfe17ffa504, type: 2}
   - {fileID: 2100000, guid: 6cc4294522cdd9e40b714ad060583960, type: 2}
   _buildingsAddedPerRound: 4
-  _roadsAddedPerRound: 50
-  _roundsAmt: 5
-  _availableRoadsAmt: 50
+  _roadsAddedPerRound: 20
+  _roundsAmt: 3
+  _availableRoadsAmt: 40
   _progressBar: {fileID: 104766298}
   _roadsAmtText: {fileID: 1286113983}
 --- !u!1001 &1959466689
