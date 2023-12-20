@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class PlacementSystem : MonoBehaviour
 {
-    [SerializeField] private ObjectsDatabaseSO database;
+    [SerializeField] private ObjectsDatabaseSO road_database;
 
     [SerializeField] private InputManager inputManager;
 
@@ -13,6 +13,8 @@ public class PlacementSystem : MonoBehaviour
 
     [SerializeField] private int selectedObject;
 
+    [SerializeField] private GameObject blueBuilding;
+
     private Dictionary<Vector3Int, bool> _isBusy = new();
 
     private bool _isButtonHold;
@@ -21,7 +23,9 @@ public class PlacementSystem : MonoBehaviour
 
     private void Start()
     {
+        // Debug.Log("Dict of states: ");
         // inputManager.OnClicked += PlaceObject;
+        // PlaceRandomBuildings();
     }
 
     private void Update()
@@ -32,6 +36,8 @@ public class PlacementSystem : MonoBehaviour
 
         if (Input.GetButton("Fire1"))
             PlaceRoad();
+        else if (Input.GetButton("Fire2")) 
+            RemovePoint();
         else
             _isButtonHold = false;
     }
@@ -41,9 +47,9 @@ public class PlacementSystem : MonoBehaviour
         var mousePosition = inputManager.GetSelectedMapPosition();
         var gridPosition = _gridGraph.WorldToCell(mousePosition);
         if (_gridGraph.IsCellFree(gridPosition)) return;
-        var newObject = Instantiate(database.objectsData[selectedObject].Prefab);
+        var newObject = Instantiate(road_database.objectsData[selectedObject].Prefab);
         newObject.transform.position =
-            _gridGraph.CellToWorld(gridPosition) + database.objectsData[selectedObject].Offset;
+            _gridGraph.CellToWorld(gridPosition) + road_database.objectsData[selectedObject].Offset;
         _gridGraph.PlaceNewObject(gridPosition);
     }
 
@@ -58,5 +64,13 @@ public class PlacementSystem : MonoBehaviour
         }
 
         if (_gridGraph.IsPointInCell(mousePosition) && _gridGraph.ConnectTwoPoints(_previousCellPosition, gridPosition)) _previousCellPosition = gridPosition;
+    }
+
+    public void RemovePoint()
+    {
+        var mousePosition = inputManager.GetSelectedMapPosition();
+        var gridPosition = _gridGraph.WorldToCell(mousePosition);
+        
+        _gridGraph.DeletePoint(gridPosition);
     }
 }
