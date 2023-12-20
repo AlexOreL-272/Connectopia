@@ -16575,7 +16575,7 @@ MonoBehaviour:
   _buildingsAddedPerRound: 4
   _roadsAddedPerRound: 50
   _roundsAmt: 5
-  _availableRoadsAmt: 50
+  _availableRoadsAmt: 120
   _progressBar: {fileID: 983251958}
   _roadsAmtText: {fileID: 1988918242}
 --- !u!1001 &1958461940

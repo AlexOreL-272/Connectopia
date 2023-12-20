@@ -286,13 +286,15 @@ public class GridGraph : MonoBehaviour
             State newState = new State();
             newState.isOccupied = true;
             newState.type = "building";
-            newState.color = Color.gray;
+            // newState.color = Color.gray;
 
             int randColor = UnityEngine.Random.Range(0, _colorsAmt);
 
             newState.neededColor = colorMap[randColor];
 
+            var prevColor = _graphStates[randPos].color;
             _graphStates[randPos] = newState;
+            _graphStates[randPos].color = prevColor;
 
             (randPos.y, randPos.z) = (randPos.z, randPos.y);
             var newBuilding = Instantiate(
