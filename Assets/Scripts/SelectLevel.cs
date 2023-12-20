@@ -28,6 +28,6 @@ public class SelectionMenu : MonoBehaviour
     }
     public void Level4()
     {
-        SceneManager.LoadScene("SampleScene");
+        SceneManager.LoadScene("Level4");
     }
 }
